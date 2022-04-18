@@ -1,0 +1,15 @@
+TODO: 
+
+>> STDIN input
+
+>> Interpretace instrukcí probíhá dle atributu
+   order vzestupně (nicméně, sekvence nemusí být souvislá/seřazená na rozdíl od sekce 3.1)
+
+>> argumenty
+
+>> vyriesit nil
+
+
+IMPORTANT:
+
+>> Vstup/vstupní soubor může být prázdný; např. neinterpretuje-li se žádná instrukce READ.
