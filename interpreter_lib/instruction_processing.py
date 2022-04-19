@@ -343,12 +343,12 @@ class READ(Instruction):
             if load is None:
                 load = input()
 
-            if type(value) == int:
+            if value == "int":
                 try:
                     result = int(load)
                 except ValueError:
-                    result = 0
-            elif type(value) == bool:
+                    result = ""
+            elif value == "bool":
                 if re.match(r'^true$', load, re.IGNORECASE):
                     result = True
                 else:
@@ -357,7 +357,7 @@ class READ(Instruction):
                 result = load
 
         except EOFError:
-            result = ''
+            result = ""
 
         self.Arg1.set_value(result)
 
@@ -385,7 +385,7 @@ class WRITE(Instruction):
             print("true", end='')
         elif value is False:
             print("false", end='')
-        elif self.Arg1.get_type() == "nil":
+        elif self.Arg1.get_type() == "nil" or value == "nil":
             print("", end='')
         else:
             print(value, end='')
@@ -500,7 +500,7 @@ class JUMP(Instruction):
         except KeyError:
             exit(ErrType.exitWithError(ErrType.errSemantics))
 
-
+# TODO nil v jumpoch???????????/
 class JUMPIFEQ(Instruction):
     def __init__(self, num, stack, frames, labelJump, ord_num):
         super().__init__(num, stack, frames, labelJump, ord_num)

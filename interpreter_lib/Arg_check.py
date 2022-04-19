@@ -8,6 +8,13 @@ class ArgumentParser(argparse.ArgumentParser):
         self.exit(ErrType.errWrongParameters.code, '%s: error: %s\n' % (self.prog, message))
 
 
+class UniqueStore(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string):
+        if getattr(namespace, self.dest, self.default) is not self.default:
+            parser.error(option_string + " appears several times.")
+        setattr(namespace, self.dest, values)
+
+
 class Arguments:
 
     # initializes the arguments
@@ -19,12 +26,12 @@ class Arguments:
         self.sourceFileFull = False
 
         self.parser = ArgumentParser(add_help=False)
-        self.parser.add_argument('-h', '--help', action='store_true',
-                            help="prints usage info, can't be combined with other arguments")
-        self.parser.add_argument("-s", "--source", metavar='FILE', type=str, help="--source=file : "
-                                                                        "sets the path to the XML representation of source file")
-        self.parser.add_argument("--input", metavar='FILE', type=str, help="--input=file : "        
-                                                                 "sets path to the file that contains input for interpretation")
+        self.parser.add_argument('--help', action='store_true',
+                                 help="prints usage info, can't be combined with other arguments")
+        self.parser.add_argument("-s", "--source", metavar='FILE', action=UniqueStore, type=str, help="--source=file : "
+                                                                                                      "sets the path to the XML representation of source file")
+        self.parser.add_argument("--input", metavar='FILE', action=UniqueStore, type=str, help="--input=file : "
+                                                                                               "sets path to the file that contains input for interpretation")
         self.args = self.parser.parse_args()
         self.argc = len(arguments)
         self.argsExe()
@@ -73,5 +80,3 @@ class Arguments:
 
     def setInputFileFull(self):
         self.inputFileFull = True
-
-
