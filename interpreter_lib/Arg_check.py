@@ -21,7 +21,6 @@ class Arguments:
         self.parser = ArgumentParser(add_help=False)
         self.parser.add_argument('-h', '--help', action='store_true',
                             help="prints usage info, can't be combined with other arguments")
-        #self.group = self.parser.add_mutually_exclusive_group(required=True)
         self.parser.add_argument("-s", "--source", metavar='FILE', type=str, help="--source=file : "
                                                                         "sets the path to the XML representation of source file")
         self.parser.add_argument("--input", metavar='FILE', type=str, help="--input=file : "        
@@ -58,13 +57,13 @@ class Arguments:
             exit(ErrType.exitWithError(ErrType.errWrongParameters))
 
     def setInputFileName(self):
-        self.inputFileName = os.path.basename(self.args.input)
+        self.inputFileName = self.args.input
 
     def getInputFileName(self):
         return self.inputFileName
 
     def setSourceFileName(self):
-        self.sourceFileName = os.path.basename(self.args.source)
+        self.sourceFileName = self.args.source
 
     def getSourceFileName(self):
         return self.sourceFileName

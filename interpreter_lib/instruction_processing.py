@@ -1,10 +1,12 @@
 import interpreter_lib.Error_type as ErrType
 import sys
+import re
 
 
 class Instruction:
 
-    def __init__(self, num, stack, frames, labelJump):
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        self.ord_num = ord_num
         self.labelJump = labelJump
         self._numOfArgs: int = num
         self.frames = frames
@@ -12,6 +14,9 @@ class Instruction:
         self.Arg1 = None
         self.Arg2 = None
         self.Arg3 = None
+
+    def get_ord_num(self):
+        return self.ord_num
 
     def setArg1(self, arg_type, arg_value):
         self.Arg1 = ArgFactory.resolve(1, arg_type, arg_value, self.frames)
@@ -42,8 +47,8 @@ class Instruction:
 
 
 class Defvar(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         if isinstance(self.Arg1, Var):
@@ -51,8 +56,8 @@ class Defvar(Instruction):
 
 
 class Move(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
 
@@ -64,32 +69,32 @@ class Move(Instruction):
 
 
 class CreateFrame(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         self.frames.create_frame()
 
 
 class PUSHFRAME(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         self.frames.push_frame()
 
 
 class POPFRAME(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         self.frames.pop_frame()
 
 
 class CALL(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         order_num = self.labelJump.order_num
@@ -104,8 +109,8 @@ class CALL(Instruction):
 
 
 class RETURN(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         label_position = self.labelJump.label_position
@@ -117,16 +122,16 @@ class RETURN(Instruction):
 
 
 class PUSHS(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         self.stack.append(self.varVsConst_value(self.Arg1))
 
 
 class POPS(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         try:
@@ -138,36 +143,36 @@ class POPS(Instruction):
 
 
 class ADD(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
         operand_y = self.varVsConst_value(self.Arg3)
 
         if type(operand_x) == int and type(operand_y) == int:
-            self.Arg1[0].set_value(operand_x + operand_y)
+            self.Arg1.set_value(operand_x + operand_y)
         else:
             exit(ErrType.exitWithError(ErrType.errWrongOperandType))
 
 
 class SUB(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
         operand_y = self.varVsConst_value(self.Arg3)
 
         if type(operand_x) == int and type(operand_y) == int:
-            self.Arg1[0].set_value(operand_x - operand_y)
+            self.Arg1.set_value(operand_x - operand_y)
         else:
             exit(ErrType.exitWithError(ErrType.errWrongOperandType))
 
 
 class MUL(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -180,8 +185,8 @@ class MUL(Instruction):
 
 
 class IDIV(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -197,22 +202,22 @@ class IDIV(Instruction):
 
 
 class LT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
         operand_y = self.varVsConst_value(self.Arg3)
 
         if type(operand_x) == type(operand_y):
-            self.Arg1[0].set_value(operand_x < operand_y)
+            self.Arg1.set_value(operand_x < operand_y)
         else:
             exit(ErrType.exitWithError(ErrType.errWrongOperandType))
 
 
 class GT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -225,25 +230,26 @@ class GT(Instruction):
 
 
 class EQ(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
         operand_y = self.varVsConst_value(self.Arg3)
 
         if type(operand_x) == type(operand_y):
-            if type(operand_x) == int or type(operand_y) == bool:
+            if type(operand_x) == int or type(operand_y) == bool or self.Arg2.get_type() == "nil" or \
+                 type(operand_y) == str:
                 self.Arg1.set_value(operand_x == operand_y)
             else:
-                self.Arg1.set_value(len(operand_x) == len(operand_y))
+                exit(ErrType.exitWithError(ErrType.errWrongOperandType))
         else:
             exit(ErrType.exitWithError(ErrType.errWrongOperandType))
 
 
 class AND(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -256,8 +262,8 @@ class AND(Instruction):
 
 
 class OR(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -270,8 +276,8 @@ class OR(Instruction):
 
 
 class NOT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -283,13 +289,12 @@ class NOT(Instruction):
 
 
 class INT2CHAR(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
 
         operand_x = self.varVsConst_value(self.Arg2)
-        print(self.Arg2.get_type())
         if type(operand_x) == int:
             try:
                 self.Arg1.set_value(chr(operand_x))
@@ -300,8 +305,8 @@ class INT2CHAR(Instruction):
 
 
 class STRI2INT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -317,24 +322,78 @@ class STRI2INT(Instruction):
 
 
 class READ(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num, input_list):
+        super().__init__(num, stack, frames, labelJump, ord_num)
+        self.input_list = input_list
+        self.value = None
 
     def execute(self):
-        print("Jsem READ s argumentem")
+
+        load = None
+
+        value = self.Arg2.get_value()
+
+        if self.input_list:
+            if len(self.input_list) > 1:
+                load = self.input_list.pop(0)
+            else:
+                exit(ErrType.exitWithError(ErrType.errSourceFile))
+
+        try:
+            if load is None:
+                load = input()
+
+            if type(value) == int:
+                try:
+                    result = int(load)
+                except ValueError:
+                    result = 0
+            elif type(value) == bool:
+                if re.match(r'^true$', load, re.IGNORECASE):
+                    result = True
+                else:
+                    result = False
+            else:
+                result = load
+
+        except EOFError:
+            result = ''
+
+        self.Arg1.set_value(result)
 
 
 class WRITE(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
-        print(self.varVsConst_value(self.Arg1))
+
+        value = self.varVsConst_value(self.Arg1)
+
+        if type(value) == str:
+            str_value = re.compile(r"(\\[0-9]{3})", re.UNICODE)
+
+            pieces = str_value.split(value)
+            value = ""
+
+            for piece in pieces:
+                if str_value.match(piece):
+                    piece = chr(int(piece[1:]))
+                value += piece
+
+        if value is True:
+            print("true", end='')
+        elif value is False:
+            print("false", end='')
+        elif self.Arg1.get_type() == "nil":
+            print("", end='')
+        else:
+            print(value, end='')
 
 
 class CONCAT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -347,8 +406,8 @@ class CONCAT(Instruction):
 
 
 class STRLEN(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -360,8 +419,8 @@ class STRLEN(Instruction):
 
 
 class GETCHAR(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -377,8 +436,8 @@ class GETCHAR(Instruction):
 
 
 class SETCHAR(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg2)
@@ -402,25 +461,27 @@ class SETCHAR(Instruction):
 
 
 class TYPE(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         typ = self.Arg2.get_value()
 
         if type(typ) == bool:
-            self.Arg1.set_value('bool')
+            self.Arg1.set_value("bool")
         elif type(typ) == int:
-            self.Arg1.set_value('int')
+            self.Arg1.set_value("int")
         elif type(typ) == str:
-            self.Arg1.set_value('string')
+            self.Arg1.set_value("string")
+        elif self.Arg2.get_type() == "nil":
+            self.Arg1.set_value("nil")
         else:
-            self.Arg1.set_value('')
+            self.Arg1.set_value("")
 
 
 class LABEL(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         order_num = self.labelJump.order_num
@@ -429,8 +490,8 @@ class LABEL(Instruction):
 
 
 class JUMP(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         label_dict = self.labelJump.label_dict
@@ -441,8 +502,8 @@ class JUMP(Instruction):
 
 
 class JUMPIFEQ(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
 
@@ -450,6 +511,8 @@ class JUMPIFEQ(Instruction):
         operand_x = self.varVsConst_value(self.Arg2)
         operand_y = self.varVsConst_value(self.Arg3)
 
+        # TODO or \
+        #       (self.Arg2.get_type() == "nil" and self.Arg3.get_type() == "nil")
         if (type(operand_x) == int and type(operand_y) == int) or \
                 (type(operand_x) == bool and type(operand_y) == bool) or \
                 (type(operand_x) == str and type(operand_y) == str):
@@ -463,8 +526,8 @@ class JUMPIFEQ(Instruction):
 
 
 class JUMPIFNEQ(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         label_dict = self.labelJump.label_dict
@@ -484,8 +547,8 @@ class JUMPIFNEQ(Instruction):
 
 
 class EXIT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.varVsConst_value(self.Arg1)
@@ -499,8 +562,8 @@ class EXIT(Instruction):
 
 
 class DPRINT(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         operand_x = self.Arg1.get_value()
@@ -509,8 +572,8 @@ class DPRINT(Instruction):
 
 
 class BREAK(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         print("Stack: {0}\nInstruction counter: {1}\nDefined labels: {2}".format(self.stack,
@@ -520,8 +583,8 @@ class BREAK(Instruction):
 
 
 class InstPass(Instruction):
-    def __init__(self, num, stack, frames, labelJump):
-        super().__init__(num, stack, frames, labelJump)
+    def __init__(self, num, stack, frames, labelJump, ord_num):
+        super().__init__(num, stack, frames, labelJump, ord_num)
 
     def execute(self):
         pass
@@ -621,120 +684,118 @@ class ArgFactory:
             return Argument(num, typ, value, frames)
 
         else:
-            print(typ)
-            print("uh oh")
-            exit(ErrType.exitWithError(ErrType.errXmlNotWellFormatted))
+            exit(ErrType.exitWithError(ErrType.errXmlStructureSyntaxLex))
 
 
 # will solve xml constructions
 class Factory:
     @classmethod
-    def resolve(cls, string: str, stack, frames, labelJump):
+    def resolve(cls, string: str, stack, frames, labelJump, ord_num, arg):
         if string.upper() == "DEFVAR":
-            return Defvar(2, stack, frames, labelJump)
+            return Defvar(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "MOVE":
-            return Move(2, stack, frames, labelJump)
+            return Move(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "CREATEFRAME":
-            return CreateFrame(0, stack, frames, labelJump)
+            return CreateFrame(0, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "PUSHFRAME":
-            return PUSHFRAME(0, stack, frames, labelJump)
+            return PUSHFRAME(0, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "POPFRAME":
-            return POPFRAME(0, stack, frames, labelJump)
+            return POPFRAME(0, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "CALL":
-            return CALL(1, stack, frames, labelJump)
+            return CALL(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "RETURN":
-            return RETURN(0, stack, frames, labelJump)
+            return RETURN(0, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "PUSHS":
-            return PUSHS(1, stack, frames, labelJump)
+            return PUSHS(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "POPS":
-            return POPS(1, stack, frames, labelJump)
+            return POPS(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "ADD":
-            return ADD(3, stack, frames, labelJump)
+            return ADD(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "SUB":
-            return SUB(3, stack, frames, labelJump)
+            return SUB(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "MUL":
-            return MUL(3, stack, frames, labelJump)
+            return MUL(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "IDIV":
-            return IDIV(3, stack, frames, labelJump)
+            return IDIV(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "LT":
-            return LT(3, stack, frames, labelJump)
+            return LT(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "GT":
-            return GT(3, stack, frames, labelJump)
+            return GT(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "EQ":
-            return EQ(3, stack, frames, labelJump)
+            return EQ(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "AND":
-            return AND(3, stack, frames, labelJump)
+            return AND(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "OR":
-            return OR(3, stack, frames, labelJump)
+            return OR(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "NOT":
-            return NOT(2, stack, frames, labelJump)
+            return NOT(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "INT2CHAR":
-            return INT2CHAR(2, stack, frames, labelJump)
+            return INT2CHAR(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "STRI2INT":
-            return STRI2INT(3, stack, frames, labelJump)
+            return STRI2INT(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "READ":
-            return READ(2, stack, frames, labelJump)
+            return READ(2, stack, frames, labelJump, ord_num, arg)
 
         elif string.upper() == "WRITE":
-            return WRITE(1, stack, frames, labelJump)
+            return WRITE(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "CONCAT":
-            return CONCAT(3, stack, frames, labelJump)
+            return CONCAT(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "STRLEN":
-            return STRLEN(2, stack, frames, labelJump)
+            return STRLEN(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "GETCHAR":
-            return GETCHAR(3, stack, frames, labelJump)
+            return GETCHAR(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "SETCHAR":
-            return SETCHAR(3, stack, frames, labelJump)
+            return SETCHAR(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "TYPE":
-            return TYPE(2, stack, frames, labelJump)
+            return TYPE(2, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "LABEL":
-            return LABEL(1, stack, frames, labelJump)
+            return LABEL(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "JUMP":
-            return JUMP(1, stack, frames, labelJump)
+            return JUMP(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "JUMPIFEQ":
-            return JUMPIFEQ(3, stack, frames, labelJump)
+            return JUMPIFEQ(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "JUMPIFNEQ":
-            return JUMPIFNEQ(3, stack, frames, labelJump)
+            return JUMPIFNEQ(3, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "EXIT":
-            return EXIT(1, stack, frames, labelJump)
+            return EXIT(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "DPRINT":
-            return DPRINT(1, stack, frames, labelJump)
+            return DPRINT(1, stack, frames, labelJump, ord_num)
 
         elif string.upper() == "BREAK":
-            return BREAK(0, stack, frames, labelJump)
+            return BREAK(0, stack, frames, labelJump, ord_num)
 
         else:
-            print("wtf instrukcia neexistuje ?????????/")
+            exit(ErrType.exitWithError(ErrType.errXmlStructureSyntaxLex))
             return
