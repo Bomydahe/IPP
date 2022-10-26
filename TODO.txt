@@ -1,7 +1,5 @@
 TODO: 
->> argumenty doriesit
-
->> vyriesit nil
+>> 
 
 
 
